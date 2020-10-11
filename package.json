@@ -1,0 +1,22 @@
+{
+  "name": "com.caxapexac.common-unity",
+  "author": "caxapexac",
+  "displayName": "Caxapexac Common Unity3D Collection",
+  "description": "Collection of Unity3D classes to slightly improve workflow",
+  "unity": "2019.1",
+  "version": "2020.0.1",
+  "keywords": [
+    "csharp",
+    "c#",
+    "unity",
+    "unity3d",
+    "extensions",
+    "patterns"
+  ],
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/caxapexac/common-unity.git"
+  }
+}
