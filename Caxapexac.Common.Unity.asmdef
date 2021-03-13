@@ -1,6 +1,8 @@
 {
-    "name": "Caxapexac.CommonUnity",
+    "name": "Caxapexac.Common.Unity",
     "references": [
+        "GUID:84907076f7818d24cbb01abd4a7276e3",
+        "GUID:2214a6ce3f0d149baa1ae1207ce9a8b0"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

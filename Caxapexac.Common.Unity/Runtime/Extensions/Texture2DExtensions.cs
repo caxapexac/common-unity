@@ -1,0 +1,102 @@
+using UnityEngine;
+
+
+namespace Caxapexac.Common.Sharp.Runtime.Extensions.Unity
+{
+    public static class Texture2DExtensions
+    {
+        public static Sprite AsSprite(this Texture2D self)
+        {
+            var rect = new Rect(0, 0, self.width, self.height);
+            var pivot = new Vector2(0.5f, 0.5f);
+            return Sprite.Create(self, rect, pivot);
+        }
+
+        /// <summary>
+        /// Change texture size (and scale accordingly)
+        /// </summary>
+        public static Texture2D Resample(this Texture2D self, int targetWidth, int targetHeight)
+        {
+            int sourceWidth = self.width;
+            int sourceHeight = self.height;
+            float sourceAspect = (float)sourceWidth / sourceHeight;
+            float targetAspect = (float)targetWidth / targetHeight;
+            int xOffset = 0;
+            int yOffset = 0;
+            float factor;
+            if (sourceAspect > targetAspect)
+            {
+                // crop width
+                factor = (float)targetHeight / sourceHeight;
+                xOffset = (int)((sourceWidth - sourceHeight * targetAspect) * 0.5f);
+            }
+            else
+            {
+                // crop height
+                factor = (float)targetWidth / sourceWidth;
+                yOffset = (int)((sourceHeight - sourceWidth / targetAspect) * 0.5f);
+            }
+            var data = self.GetPixels32();
+            var data2 = new Color32[targetWidth * targetHeight];
+            for (int y = 0; y < targetHeight; y++)
+            {
+                for (int x = 0; x < targetWidth; x++)
+                {
+                    var p = new Vector2(Mathf.Clamp(xOffset + x / factor, 0, sourceWidth - 1), Mathf.Clamp(yOffset + y / factor, 0, sourceHeight - 1));
+
+                    // bilinear filtering
+                    var c11 = data[Mathf.FloorToInt(p.x) + sourceWidth * (Mathf.FloorToInt(p.y))];
+                    var c12 = data[Mathf.FloorToInt(p.x) + sourceWidth * (Mathf.CeilToInt(p.y))];
+                    var c21 = data[Mathf.CeilToInt(p.x) + sourceWidth * (Mathf.FloorToInt(p.y))];
+                    var c22 = data[Mathf.CeilToInt(p.x) + sourceWidth * (Mathf.CeilToInt(p.y))];
+                    data2[x + y * targetWidth] = Color.Lerp(Color.Lerp(c11, c12, p.y), Color.Lerp(c21, c22, p.y), p.x);
+                }
+            }
+            var tex = new Texture2D(targetWidth, targetHeight);
+            tex.SetPixels32(data2);
+            tex.Apply(true);
+            return tex;
+        }
+
+        /// <summary>
+        /// Crop texture to desired size.
+        /// Somehow cropped image seemed darker, brightness offset may fix this
+        /// </summary>
+        public static Texture2D Crop(this Texture2D self, int left, int right, int top, int down, float brightnessOffset = 0)
+        {
+            int x = left + right;
+            int y = top + down;
+            int resW = self.width - x;
+            int resH = self.height - y;
+            var pixels = self.GetPixels(left, down, resW, resH);
+            if (!Mathf.Approximately(brightnessOffset, 0))
+            {
+                for (var i = 0; i < pixels.Length; i++)
+                {
+                    pixels[i] = pixels[i].BrightnessOffset(brightnessOffset);
+                }
+            }
+            Texture2D result = new Texture2D(resW, resH, TextureFormat.RGB24, false);
+            result.SetPixels(pixels);
+            result.Apply();
+            return result;
+        }
+
+        /// <summary>
+        /// Will texture with solid color
+        /// </summary>
+        public static Texture2D WithSolidColor(this Texture2D self, Color color)
+        {
+            var target = new Texture2D(self.width, self.height);
+            for (int i = 0; i < target.width; i++)
+            {
+                for (int j = 0; j < target.height; j++)
+                {
+                    target.SetPixel(i, j, color);
+                }
+            }
+            target.Apply();
+            return target;
+        }
+    }
+}
